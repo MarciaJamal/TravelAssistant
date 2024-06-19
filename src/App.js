@@ -1,25 +1,35 @@
-import logo from './logo.svg';
+import React, { useState } from 'react';
 import './App.css';
+import Header from './components/Header';
+import SearchForm from './components/SearchForm';
+import Weather from './components/Weather';
+import ExchangeRates from './components/ExchangeRates';
+import { getWeather, getExchangeRates } from './services/api';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+const App = () => {
+    const [weatherData, setWeatherData] = useState(null);
+    const [exchangeRatesData, setExchangeRatesData] = useState(null);
+
+    const handleSearch = async (city) => {
+        try {
+            const weatherResponse = await getWeather(city);
+            setWeatherData(weatherResponse.data);
+            
+            const exchangeRatesResponse = await getExchangeRates();
+            setExchangeRatesData(exchangeRatesResponse.data);
+        } catch (error) {
+            console.error('Error fetching data', error);
+        }
+    };
+
+    return (
+        <div className="App">
+            <Header />
+            <SearchForm onSearch={handleSearch} />
+            <Weather data={weatherData} />
+            <ExchangeRates data={exchangeRatesData} />
+        </div>
+    );
+};
 
 export default App;
