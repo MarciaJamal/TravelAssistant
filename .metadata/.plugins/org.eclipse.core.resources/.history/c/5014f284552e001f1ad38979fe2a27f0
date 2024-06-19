@@ -1,0 +1,37 @@
+package Services;
+
+import Models.WeatherForecast;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import java.time.LocalDateTime;
+
+@Service
+public class WeatherService {
+
+    @Value("${openweathermap.api.key}")
+    private String openWeatherMapApiKey;
+
+    @Value("${openweathermap.api.url}")
+    private String openWeatherMapApiUrl;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    public WeatherApiService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    public WeatherForecast fetchWeatherForecast(String city) {
+        String url = String.format("%s?q=%s&appid=%s", openWeatherMapApiUrl, city, openWeatherMapApiKey);
+        WeatherData weatherData = restTemplate.getForObject(url, WeatherData.class);
+
+        WeatherForecast forecast = new WeatherForecast();
+        forecast.setCity(new City()); 
+        forecast.setTimestamp(LocalDateTime.now());
+        forecast.setDescription(weatherData.getDescription());
+        forecast.setTemperature(weatherData.getTemperature());
+        forecast.setHumidity(weatherData.getHumidity());
+
+        return forecast;
+    }
+}

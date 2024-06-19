@@ -1,0 +1,62 @@
+package Controllers;
+
+import Models.ExchangeRate;
+import Services.ExchangeRateService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/exchange-rates")
+public class ExchangeRateController {
+
+    @Autowired
+    private ExchangeRateService exchangeRateService;
+
+    @GetMapping
+    public List<ExchangeRate> getAllRates() {
+        return exchangeRateService.getAllRates();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ExchangeRate> getRateById(@PathVariable Long id) {
+        Optional<ExchangeRate> rate = exchangeRateService.getRateById(id);
+        return rate.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/pair")
+    public ResponseEntity<ExchangeRate> getRateByCurrencyPair(@RequestParam String fromCurrency, @RequestParam String toCurrency) {
+        ExchangeRate rate = exchangeRateService.getRateByCurrencyPair(fromCurrency, toCurrency);
+        return rate != null ? ResponseEntity.ok(rate) : ResponseEntity.notFound().build();
+    }
+
+    @PostMapping
+    public ExchangeRate createRate(@RequestBody ExchangeRate exchangeRate) {
+        return exchangeRateService.saveRate(exchangeRate);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ExchangeRate> updateRate(@PathVariable Long id, @RequestBody ExchangeRate rateDetails) {
+        Optional<ExchangeRate> rate = exchangeRateService.getRateById(id);
+        if (rate.isPresent()) {
+            ExchangeRate rateToUpdate = rate.get();
+            rateToUpdate.setFromCurrency(rateDetails.getFromCurrency());
+            rateToUpdate.setToCurrency(rateDetails.getToCurrency());
+            rateToUpdate.setRate(rateDetails.getRate());
+            rateToUpdate.setTimestamp(rateDetails.getTimestamp());
+            ExchangeRate updatedRate = exchangeRateService.saveRate(rateToUpdate);
+            return ResponseEntity.ok(updatedRate);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRate(@PathVariable Long id) {
+        exchangeRateService.deleteRate(id);
+        return ResponseEntity.noContent().build();
+    }
+}

@@ -1,0 +1,27 @@
+package Services;
+import Models.WeatherData;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+@Service
+public class WeatherService {
+
+    @Value("${openweathermap.api.key}")
+    private String openWeatherMapApiKey;
+
+    @Value("${openweathermap.api.url}")
+    private String openWeatherMapApiUrl;
+
+    private final RestTemplate restTemplate;
+
+    public WeatherService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    public WeatherData getWeather(String city) {
+        String url = String.format("%s?q=%s&appid=%s", openWeatherMapApiUrl, city, openWeatherMapApiKey);
+        return restTemplate.getForObject(url, WeatherData.class);
+    }
+}
+
